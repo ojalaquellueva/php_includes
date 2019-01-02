@@ -17,7 +17,7 @@ function format_taxon($taxon, $author, $rank) {
 	return($result);
 }
 
-function get_family($taxon_id) {
+function get_family($db_con,$taxon_id) {
 	//accepts PK of a taxon and returns family, rank is <= family
 	// returns message "[>1 family found!]" if >1 family found
 
@@ -25,30 +25,30 @@ function get_family($taxon_id) {
 	$SQL = "SELECT left_index, right_index FROM taxon WHERE taxon_id=$taxon_id;";
 	// $SQL = "SELECT taxon_id from taxon WHERE taxon_id<100;";
 	//print "SQL=".$SQL."<br />";
-	$find_taxon = (mysql_query($SQL));
+	$find_taxon = (mysqli_query($db_con,$SQL));
 	//print "taxon_id=".$taxon_id."<br />";
 	//print "find_taxon=".$find_taxon."<br />";
-	$num_rows = mysql_num_rows($find_taxon);
+	$num_rows = mysqli_num_rows($find_taxon);
 	//print "num_rows=".$num_rows."<br />";
 	if ($num_rows < 1) {
 		die("");
 	}
 
-	$row = mysql_fetch_row($find_taxon);
+	$row = mysqli_fetch_row($find_taxon);
 	$l_ind = $row[0];
 	$r_ind = $row[1];
 
 	if ($l_ind!=null AND $r_ind!=null) {
 		$sql="SELECT taxon FROM taxon WHERE left_index<$l_ind AND right_index>$r_ind AND rank = 'family'";
-		$find_fam = (mysql_query($sql));
-		$num_rows = mysql_num_rows($find_fam);
+		$find_fam = (mysqli_query($db_con,$sql));
+		$num_rows = mysqli_num_rows($find_fam);
 	
 		if ($num_rows > 1) {
 			$fam="[>1 family found!]";
 		} elseif ($num_rows<1) {
 			$fam=NULL;
 		} else {
-			$row = mysql_fetch_row($find_fam);
+			$row = mysqli_fetch_row($find_fam);
 			$fam = trim($row[0]);
 		}
 	} else {
@@ -58,121 +58,121 @@ function get_family($taxon_id) {
 	return($fam);
 }
 
-function get_family_by_taxon($taxon) {
+function get_family_by_taxon($db_con,$taxon) {
 	//accepts (text) taxon name and returns family, if rank is <= family
 	// returns message "[>1 family found!]" if >1 family found
 
 	//get indices of taxon
 	$SQL = "SELECT left_index, right_index FROM taxon WHERE taxon='$taxon';";
-	$find_taxon = (mysql_query($SQL));
-	$num_rows = mysql_num_rows($find_taxon);
+	$find_taxon = (mysqli_query($db_con,$SQL));
+	$num_rows = mysqli_num_rows($find_taxon);
 	if ($num_rows < 1) {
 		die("");
 	}
 
-	$row = mysql_fetch_row($find_taxon);
+	$row = mysqli_fetch_row($find_taxon);
 	$l_ind = $row[0];
 	$r_ind = $row[1];
 
-	$find_fam = (mysql_query("SELECT taxon FROM taxon WHERE left_index<$l_ind AND right_index>$r_ind AND rank = 'family'"));
-	$num_rows = mysql_num_rows($find_fam);
+	$find_fam = (mysqli_query($db_con,"SELECT taxon FROM taxon WHERE left_index<$l_ind AND right_index>$r_ind AND rank = 'family'"));
+	$num_rows = mysqli_num_rows($find_fam);
 
 	if ($num_rows > 1) {
 		$fam="[>1 family found!]";
 	} elseif ($num_rows<1) {
 		$fam=NULL;
 	} else {
-		$row = mysql_fetch_row($find_fam);
+		$row = mysqli_fetch_row($find_fam);
 		$fam = trim($row[0]);
 	}
 	
 	return($fam);
 }
 
-function get_first_family($taxon_id) {
+function get_first_family($db_con,$taxon_id) {
 	// accepts PK of a taxon and returns family, rank is <= family
 	// returns 'nearest' family (highest left_index) if >1 family found
 
 	//get left and right indices of taxon
 	$SQL = "SELECT left_index, right_index FROM taxon WHERE taxon_id=$taxon_id;";
-	$find_taxon = (mysql_query($SQL));
-	$num_rows = mysql_num_rows($find_taxon);
+	$find_taxon = (mysqli_query($db_con,$SQL));
+	$num_rows = mysqli_num_rows($find_taxon);
 	
 	if ($num_rows < 1) {
 		die("");
 	}
 	
-	$row = mysql_fetch_row($find_taxon);
+	$row = mysqli_fetch_row($find_taxon);
 	$l_ind = $row[0];
 	$r_ind = $row[1];
 
 	// get family
 	$SQL_find_fam = "SELECT taxon FROM taxon WHERE left_index<$l_ind AND right_index>$r_ind AND rank = 'family';";
-	if (!($find_fam = (mysql_query($SQL_find_fam)))) die(); //die( $SQL_find_fam . "\r\n\r\n" . mysql_error());
-	$num_rows = mysql_num_rows($find_fam);
+	if (!($find_fam = (mysqli_query($db_con,$SQL_find_fam)))) die(); //die( $SQL_find_fam . "\r\n\r\n" . mysqli_error());
+	$num_rows = mysqli_num_rows($find_fam);
 
 	if ($num_rows > 1) {
 		$SQL_find_fam = "SELECT taxon FROM taxon WHERE left_index<$l_ind AND right_index>$r_ind AND rank = 'family' ORDER BY left_index ASC;";
-		$find_fam = (mysql_query($SQL_find_fam));
-		while ($row = mysql_fetch_array($find_fam, MYSQL_ASSOC)) {
+		$find_fam = (mysqli_query($db_con,$SQL_find_fam));
+		while ($row = mysqli_fetch_array($find_fam, MYSQLI_ASSOC)) {
 			$fam = $row{'taxon'};
 		}
 		//$fam="[>1 family found!]";
 	} elseif ($num_rows<1) {
 		$fam=NULL;
 	} else {
-		$row = mysql_fetch_row($find_fam);
+		$row = mysqli_fetch_row($find_fam);
 		$fam = $row[0];
 	}
 	
 	return($fam);
 }
 
-function get_parent_by_id($taxon_id, $parent_rank, $kingdom) {
+function get_parent_by_id($db_con,$taxon_id, $parent_rank, $kingdom) {
 	// accepts taxon_id and returns parent taxon (with id=taxon_id) at rank is =parent_rank
 	// kingdom parameter circumvents problem of homonyms
 
 	// Get right and left indices of lowest permissible parent (e.g., kingdom)
 	$SQL = "SELECT right_index, left_index FROM taxon WHERE taxon='$kingdom';";
-	$kingdom_indices = (mysql_query($SQL));
-	$num_rows = mysql_num_rows($kingdom_indices);
+	$kingdom_indices = (mysqli_query($db_con,$SQL));
+	$num_rows = mysqli_num_rows($kingdom_indices);
 	//	if ($num_rows!=1) die("Failed to retrieve single pair of indices for kingdom='$kingdom'.\r\nnum_rows=$num_rows\r\n"); 
 	if ($num_rows!=1) die();
 
-	while ($row = mysql_fetch_array($kingdom_indices, MYSQL_ASSOC)) {
+	while ($row = mysqli_fetch_array($kingdom_indices, MYSQLI_ASSOC)) {
 		$kingdom_l_ind = $row{'left_index'};
 		$kingdom_r_ind = $row{'right_index'};
 	}
 //	echo "kingdom_l_ind=$kingdom_l_ind, kingdom_r_ind=$kingdom_r_ind\r\n";
 
-	//	if (is_null($kingdom_l_ind) OR is_null($kingdom_r_ind)) die("Failed to retrieve kingdom indices.\r\n".mysql_error()."\r\n");
+	//	if (is_null($kingdom_l_ind) OR is_null($kingdom_r_ind)) die("Failed to retrieve kingdom indices.\r\n".mysqli_error()."\r\n");
 	if (is_null($kingdom_l_ind) OR is_null($kingdom_r_ind)) die();
 
 	// get attributes of taxon
 	// kingdom restriction will prevent retrieving >1 taxon if have homonyms in different kingdoms
 	$SQL = "SELECT left_index, right_index FROM taxon WHERE taxon_id=$taxon_id AND (left_index>$kingdom_l_ind AND right_index<=$kingdom_r_ind);";
 //	echo "SQL='$SQL'\r\n";
-	$taxon_indices = (mysql_query($SQL));
-	$num_rows = mysql_num_rows($taxon_indices);
-	//	if ($num_rows < 1) die("Failed to retrieve indices for taxon=$taxon_id.\r\n".mysql_error()."\r\n");
+	$taxon_indices = (mysqli_query($db_con,$SQL));
+	$num_rows = mysqli_num_rows($taxon_indices);
+	//	if ($num_rows < 1) die("Failed to retrieve indices for taxon=$taxon_id.\r\n".mysqli_error()."\r\n");
 	if ($num_rows < 1) die();
 //	echo "num_rows=$num_rows\r\n";
 
 	// this assumes only one set of index for $taxon_id (i.e., no homonyms within kingdom)
 	// if have >taxon_id, will not fail, but will use only indices from first record
-	$row = mysql_fetch_row($taxon_indices);
+	$row = mysqli_fetch_row($taxon_indices);
 	$l_ind = $row[0];
 	$r_ind = $row[1];
 
-	$find_parent = (mysql_query("SELECT taxon FROM taxon WHERE left_index<$l_ind AND right_index>$r_ind AND rank = '$parent_rank'"));
-	$num_rows = mysql_num_rows($find_parent);
+	$find_parent = (mysqli_query($db_con,"SELECT taxon FROM taxon WHERE left_index<$l_ind AND right_index>$r_ind AND rank = '$parent_rank'"));
+	$num_rows = mysqli_num_rows($find_parent);
 
 	if ($num_rows > 1) {
 		$parent="[>1 parent taxon found!]";
 	} elseif ($num_rows<1) {
 		//$parent="NULL";
 	} else {
-		$row = mysql_fetch_row($find_parent);
+		$row = mysqli_fetch_row($find_parent);
 		$parent = trim($row[0]);
 	}
 	
@@ -180,7 +180,7 @@ function get_parent_by_id($taxon_id, $parent_rank, $kingdom) {
 }
 
 
-function get_parent($taxon, $parent_rank, $kingdom) {
+function get_parent($db_con,$taxon, $parent_rank, $kingdom) {
 	// accepts taxon name and returns parent taxon at rank is =parent_rank
 	// kingdom parameter circumvents problem of homonyms
 
@@ -188,52 +188,52 @@ function get_parent($taxon, $parent_rank, $kingdom) {
 
 	// Get right and left indices of lowest permissible parent (e.g., kingdom)
 	$SQL = "SELECT right_index, left_index FROM taxon WHERE taxon='$kingdom';";
-	$kingdom_indices = (mysql_query($SQL));
-	$num_rows = mysql_num_rows($kingdom_indices);
+	$kingdom_indices = (mysqli_query($db_con,$SQL));
+	$num_rows = mysqli_num_rows($kingdom_indices);
 	//
 	if ($num_rows!=1) die(); 
 
-	while ($row = mysql_fetch_array($kingdom_indices, MYSQL_ASSOC)) {
+	while ($row = mysqli_fetch_array($kingdom_indices, MYSQLI_ASSOC)) {
 		$kingdom_l_ind = $row{'left_index'};
 		$kingdom_r_ind = $row{'right_index'};
 	}
 //	echo "kingdom_l_ind=$kingdom_l_ind, kingdom_r_ind=$kingdom_r_ind\r\n";
 
-	//	if (is_null($kingdom_l_ind) OR is_null($kingdom_r_ind)) die("Failed to retrieve kingdom indices.\r\n".mysql_error()."\r\n");
+	//	if (is_null($kingdom_l_ind) OR is_null($kingdom_r_ind)) die("Failed to retrieve kingdom indices.\r\n".mysqli_error()."\r\n");
 	if (is_null($kingdom_l_ind) OR is_null($kingdom_r_ind)) die();
 
 	// get attributes of taxon
 	// kingdom restriction will prevent retrieving >1 taxon if have homonyms in different kingdoms
 	$SQL = "SELECT left_index, right_index FROM taxon WHERE taxon='$taxon' AND (left_index>$kingdom_l_ind AND right_index<=$kingdom_r_ind);";
 //	echo "SQL='$SQL'\r\n";
-	$taxon_indices = (mysql_query($SQL));
-	$num_rows = mysql_num_rows($taxon_indices);
-	//	if ($num_rows < 1) die("Failed to retrieve indices for taxon=$taxon.\r\n".mysql_error()."\r\n");
+	$taxon_indices = (mysqli_query($db_con,$SQL));
+	$num_rows = mysqli_num_rows($taxon_indices);
+	//	if ($num_rows < 1) die("Failed to retrieve indices for taxon=$taxon.\r\n".mysqli_error()."\r\n");
 	if ($num_rows < 1) die();
 //	echo "num_rows=$num_rows\r\n";
 
 	// this assumes only one set of index for $taxon_id (i.e., no homonyms within kingdom)
 	// if have >taxon_id, will not fail, but will use only indices from first record
-	$row = mysql_fetch_row($taxon_indices);
+	$row = mysqli_fetch_row($taxon_indices);
 	$l_ind = $row[0];
 	$r_ind = $row[1];
 
-	$find_parent = (mysql_query("SELECT taxon FROM taxon WHERE left_index<$l_ind AND right_index>$r_ind AND rank = '$parent_rank'"));
-	$num_rows = mysql_num_rows($find_parent);
+	$find_parent = (mysqli_query($db_con,"SELECT taxon FROM taxon WHERE left_index<$l_ind AND right_index>$r_ind AND rank = '$parent_rank'"));
+	$num_rows = mysqli_num_rows($find_parent);
 
 	if ($num_rows > 1) {
 		$parent="[>1 parent taxon found!]";
 	} elseif ($num_rows<1) {
 		//$parent=NULL;
 	} else {
-		$row = mysql_fetch_row($find_parent);
+		$row = mysqli_fetch_row($find_parent);
 		$parent = trim($row[0]);
 	}
 	
 	return($parent);
 }
 
-function format_region($region_id) {
+function format_region($db_con,$region_id) {
 	//accepts PK of a region
 	//if region is a country, returns country name in caps
 	//if political division with rank = poldiv1, then returns region name, with country name pre-pended, in caps.
@@ -241,14 +241,14 @@ function format_region($region_id) {
 	//otherwise, returns name of region
 
 	//verify poldiv exists before proceeding
-	$find_region = (mysql_query("SELECT region_id, region_name, region_rank, l_ind, r_ind, region_label from region WHERE region_id=$region_id"));
-	$num_rows = mysql_num_rows($find_region);
+	$find_region = (mysqli_query($db_con,"SELECT region_id, region_name, region_rank, l_ind, r_ind, region_label from region WHERE region_id=$region_id"));
+	$num_rows = mysqli_num_rows($find_region);
 	if ($num_rows < 1) {
 		die("");
 	} 
 
 	//get attributes of region
-	$row = mysql_fetch_row($find_region);
+	$row = mysqli_fetch_row($find_region);
 	$region_id = $row[0];
 	$region = trim($row[1]);
 	$rank = $row[2];
@@ -262,35 +262,35 @@ function format_region($region_id) {
 		$region_formatted = strtoupper($region);
 	} elseif ($rank=='poldiv1') {
 		//get country
-		$find_country = (mysql_query("SELECT region_name FROM region WHERE l_ind<$l_ind AND r_ind>$r_ind AND region_rank = 'country'"));
-		$num_rows = mysql_num_rows($find_country);
+		$find_country = (mysqli_query($db_con,"SELECT region_name FROM region WHERE l_ind<$l_ind AND r_ind>$r_ind AND region_rank = 'country'"));
+		$num_rows = mysqli_num_rows($find_country);
 		
 		if ($num_rows !=1) {
 			$region_formatted = strtoupper($region);
 		} else {
-			$row = mysql_fetch_row($find_country);
+			$row = mysqli_fetch_row($find_country);
 			$country = trim($row[0]).", ";
 			$region_formatted = strtoupper($country).$region;
 		}
 
 	} elseif ($rank=='poldiv2' || $rank=='poldiv3' || $rank=='poldiv4') {
 		//get country
-		$find_country = (mysql_query("SELECT region_name FROM region WHERE l_ind<$l_ind AND r_ind>$r_ind AND region_rank = 'country'"));
-		$num_rows = mysql_num_rows($find_country);	
+		$find_country = (mysqli_query($db_con,"SELECT region_name FROM region WHERE l_ind<$l_ind AND r_ind>$r_ind AND region_rank = 'country'"));
+		$num_rows = mysqli_num_rows($find_country);	
 		if ($num_rows !=1) {
 			$country = "";
 		} else {
-			$row = mysql_fetch_row($find_country);
+			$row = mysqli_fetch_row($find_country);
 			$country = trim($row[0]).", ";
 		}
 
 		//get poldiv1
-		$find_poldiv1 = (mysql_query("SELECT region_name FROM region WHERE l_ind<$l_ind AND r_ind>$r_ind AND region_rank = 'poldiv1'"));
-		$num_rows = mysql_num_rows($find_poldiv1);	
+		$find_poldiv1 = (mysqli_query($db_con,"SELECT region_name FROM region WHERE l_ind<$l_ind AND r_ind>$r_ind AND region_rank = 'poldiv1'"));
+		$num_rows = mysqli_num_rows($find_poldiv1);	
 		if ($num_rows !=1) {
 			$poldiv1 = "";
 		} else {
-			$row = mysql_fetch_row($find_poldiv1);
+			$row = mysqli_fetch_row($find_poldiv1);
 			$poldiv1 = trim($row[0]).", ";
 		}
 
@@ -305,7 +305,7 @@ function format_region($region_id) {
 	return($region_formatted);
 }
 
-function build_indices_region($parent_id, $left) {
+function build_indices_region($db_con,$parent_id, $left) {
 	//populates left and right indices by a modified
 	//tree-traversal algorithm
 	//database & table hardwired for now
@@ -314,17 +314,17 @@ function build_indices_region($parent_id, $left) {
 	$right = $left+1; 
 
 	// get all children of this node 
-	$result = mysql_query('SELECT region_id FROM region_test WHERE parent_region_id="'.$parent_id.'";'); 
-	while ($row = mysql_fetch_array($result)) { 
+	$result = mysqli_query($db_con,'SELECT region_id FROM region_test WHERE parent_region_id="'.$parent_id.'";'); 
+	while ($row = mysqli_fetch_array($result)) { 
 		// recursive execution of this function for each 
 		// child of this node 
 		// $right is the current right value, which is 
 		// incremented by the rebuild_tree function 
-		$right = build_indices_region($row['region_id'], $right); 
+		$right = build_indices_region($db_con,$row['region_id'], $right); 
 
 		// we've got the left value, and now that we've processed 
 		// the children of this node we also know the right value 
-		mysql_query('UPDATE region_test SET l_ind='.$left.', r_ind='.$right.' WHERE region_id="'.$parent_id.'";'); 
+		mysqli_query($db_con,'UPDATE region_test SET l_ind='.$left.', r_ind='.$right.' WHERE region_id="'.$parent_id.'";'); 
 		echo "updating!<br>";
 		
 		// return the right value of this node + 1 
@@ -332,7 +332,7 @@ function build_indices_region($parent_id, $left) {
 	} 
 }
 
-function build_indices_taxon($parent_id, $left) {
+function build_indices_taxon($db_con,$parent_id, $left) {
 	//populates left and right indices by a modified
 	//tree-traversal algorithm
 	//database & table hardwired for now
@@ -341,16 +341,16 @@ function build_indices_taxon($parent_id, $left) {
 	$right = $left+1; 
 
 	// get all children of this node 
-	$result = mysql_query('SELECT taxon_id FROM taxon_test WHERE parent_taxon_id="'.$parent_id.'";'); 
-	while ($row = mysql_fetch_array($result)) { 
+	$result = mysqli_query($db_con,'SELECT taxon_id FROM taxon_test WHERE parent_taxon_id="'.$parent_id.'";'); 
+	while ($row = mysqli_fetch_array($result)) { 
 		// recursive execution of this function for each child of this node 
 		// $right is the current right value, which is 
 		// incremented by the rebuild_tree function 
-		$right = build_indices_taxon($row['taxon_id'], $right); 
+		$right = build_indices_taxon($db_con,$row['taxon_id'], $right); 
 
 		// we've got the left value, and now that we've processed 
 		// the children of this node we also know the right value 
-		mysql_query('UPDATE taxon_test SET left_index='.$left.', right_index='.$right.' WHERE taxon_id="'.$parent_id.'";'); 
+		mysqli_query($db_con,'UPDATE taxon_test SET left_index='.$left.', right_index='.$right.' WHERE taxon_id="'.$parent_id.'";'); 
 		echo "updating!<br>";
 		
 		// return the right value of this node + 1 
@@ -358,7 +358,7 @@ function build_indices_taxon($parent_id, $left) {
 	} 
 }
 
-function get_index($tbl, $this_id, $ind, $id_name, $parent_id_name, $l_ind_name, $r_ind_name) {
+function get_index($db_con,$tbl, $this_id, $ind, $id_name, $parent_id_name, $l_ind_name, $r_ind_name) {
 	// Recursively increments left and right indices index via a modified tree-traversal algorithm
 	// Initiate by sending id of root and ind=0
 	// Sets left index and right index to NULL for all records on initial call (ie., when $ind=0)
@@ -373,15 +373,15 @@ function get_index($tbl, $this_id, $ind, $id_name, $parent_id_name, $l_ind_name,
 			SET `$l_ind_name`=NULL, `$r_ind_name`=NULL;
 		";
 		
-		if (!(mysql_query($sql))) die("Failed to reset left and right indices for table `$tbl`.\r\n".mysql_error().
+		if (!(mysqli_query($db_con,$sql))) die("Failed to reset left and right indices for table `$tbl`.\r\n".mysqli_error().
 			"\r\nOffending SQL: '$sql'\r\n");
 		// get total records in table (for status message)
 		$sql="
 			SELECT `$id_name` FROM `$tbl`;
 		";
-		$result=mysql_query($sql);
+		$result=mysqli_query($db_con,$sql);
 		$get_index_row=1;
-		$get_index_tot_rows = mysql_num_rows($result);
+		$get_index_tot_rows = mysqli_num_rows($result);
 		$get_index_start_id=$this_id;
 	}
 
@@ -397,8 +397,8 @@ function get_index($tbl, $this_id, $ind, $id_name, $parent_id_name, $l_ind_name,
 		WHERE `$id_name`=$this_id 
 		AND (`$l_ind_name` IS NOT NULL);
 	";	
-	$result=mysql_query($sql);
-	$num_rows = mysql_num_rows($result);
+	$result=mysqli_query($db_con,$sql);
+	$num_rows = mysqli_num_rows($result);
 	if ($num_rows>0)  die("Error: circular reference at `$id_name`=$this_id.\r\n");
 
 	// increment index and assign to left index
@@ -411,16 +411,16 @@ function get_index($tbl, $this_id, $ind, $id_name, $parent_id_name, $l_ind_name,
 		SET `$l_ind_name`=$l_ind 
 		WHERE `$id_name`=$this_id;
 	";
-	if (!(mysql_query($sql))) die("Failed to update right index for $id_name=$this_id in table `$tbl`.\r\n".mysql_error()."\r\n");
+	if (!(mysqli_query($db_con,$sql))) die("Failed to update right index for $id_name=$this_id in table `$tbl`.\r\n".mysqli_error()."\r\n");
 
 	// check if this node has children
 	if (has_children($this_id,$tbl,$id_name,$parent_id_name)) {
 		// make array of child ids
-		$child_ids = get_children($this_id, $tbl, $id_name, $parent_id_name);
+		$child_ids = get_children($db_con,$this_id, $tbl, $id_name, $parent_id_name);
 
 		// request new index value from each child
 		foreach ($child_ids as $child_id) {
-			$ind = get_index($tbl, $child_id, $ind, $id_name, $parent_id_name, $l_ind_name, $r_ind_name);
+			$ind = get_index($db_con,$tbl, $child_id, $ind, $id_name, $parent_id_name, $l_ind_name, $r_ind_name);
 		}
 	}
 
@@ -434,7 +434,7 @@ function get_index($tbl, $this_id, $ind, $id_name, $parent_id_name, $l_ind_name,
 		SET `$r_ind_name`=$r_ind 
 		WHERE `$id_name`=$this_id;
 	";
-	if (!(mysql_query($sql))) die("Failed to update right index for $id_name=$this_id in table `$tbl`.\r\n".mysql_error()."\r\n");
+	if (!(mysqli_query($db_con,$sql))) die("Failed to update right index for $id_name=$this_id in table `$tbl`.\r\n".mysqli_error()."\r\n");
 
 	// If this is final call (back at root) print new line
 	// Issue warning if not all records indexed
@@ -446,7 +446,7 @@ function get_index($tbl, $this_id, $ind, $id_name, $parent_id_name, $l_ind_name,
 	return $ind;
 }
 
-function get_children($parent_id, $tbl, $id_name, $parent_id_name) {
+function get_children($db_con,$parent_id, $tbl, $id_name, $parent_id_name) {
 	// compiles a unidimensional array consisting of PKs of all child records
 	// table must contain a recursive FK linking children to parents
 	$sql = "
@@ -454,12 +454,12 @@ function get_children($parent_id, $tbl, $id_name, $parent_id_name) {
 		FROM `$tbl` 
 		WHERE `$parent_id_name`=$parent_id;
 	";
-	if ($result=mysql_query($sql)) {
-		$num_rows = mysql_num_rows($result);
+	if ($result=mysqli_query($db_con,$sql)) {
+		$num_rows = mysqli_num_rows($result);
 		if ($num_rows==0) {
 			$children[]=0;
 		} else {
-			while ($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+			while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
 				$children[]  = $row{'child_id'};
 			}
 		}
@@ -474,8 +474,8 @@ function has_children($this_id, $tbl, $id_name, $parent_id_name) {
 		FROM `$tbl` 
 		WHERE `$parent_id_name`=$this_id;
 	";
-	if ($result=mysql_query($sql)) {
-		$num_rows = mysql_num_rows($result);
+	if ($result=mysqli_query($db_con,$sql)) {
+		$num_rows = mysqli_num_rows($result);
 		if ($num_rows>0) {
 			return true;
 		} else {
