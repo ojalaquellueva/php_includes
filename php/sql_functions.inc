@@ -132,19 +132,19 @@ function copy_tbl($src_tbl, $dest_tbl, $src_db, $dest_db) {
 
 	$sql="DROP TABLE IF EXISTS $dest_db.$dest_tbl;";
 	if (!mysqli_query($db_con, $sql)) {
-		//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error()."\r\n";
+		//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error($db_con)."\r\n";
 		Return FALSE; 
 	}
 
 	$sql = "CREATE TABLE $dest_db.$dest_tbl LIKE $src_db.$src_tbl;";
 	if (!mysqli_query($db_con, $sql)) {
-		//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error()."\r\n";
+		//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error($db_con)."\r\n";
 		Return FALSE; 
 	}
 
 	$sql = "INSERT INTO $dest_db.$dest_tbl SELECT * FROM $src_db.$src_tbl;";
 	if (!mysqli_query($db_con, $sql)) {
-		//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error()."\r\n";
+		//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error($db_con)."\r\n";
 		Return FALSE; 
 	}
 	
@@ -174,20 +174,20 @@ function copy_tbl_warn($src_tbl, $dest_tbl, $src_db, $dest_db, $warn) {
 
 		$sql="DROP TABLE $dest_db.$dest_tbl;";
 		if (!mysqli_query($db_con, $sql)) {
-			//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error()."\r\n";
+			//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error($db_con)."\r\n";
 			Return FALSE; 
 		}
 	}
 
 	$sql = "CREATE TABLE $dest_db.$dest_tbl LIKE $src_db.$src_tbl;";
 	if (!mysqli_query($db_con, $sql)) {
-		//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error()."\r\n";
+		//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error($db_con)."\r\n";
 		Return FALSE; 
 	}
 
 	$sql = "INSERT INTO $dest_db.$dest_tbl SELECT * FROM $src_db.$src_tbl;";
 	if (!mysqli_query($db_con, $sql)) {
-		//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error()."\r\n";
+		//Return "ERROR: Offending SQL: \r\n$sql\r\n".mysqli_error($db_con)."\r\n";
 		Return FALSE; 
 	}
 	
@@ -365,7 +365,7 @@ function sql_execute($db_con, $sql,$die_on_fail,$echo_on,$msg_success,$msg_error
 	if (!mysqli_query($db_con, $sql)) {
 		echo "$msg_error.\r\n
 			Offending SQL: '$sql'\r\n
-			MYSQL error: ".mysqli_error()."\r\n\r\n";
+			MYSQL error: ".mysqli_error($db_con)."\r\n\r\n";
 		if ($die_on_fail) {
 			die(); 
 		} else {
@@ -550,7 +550,7 @@ function convert_utf8($db_con, $tbl) {
 				$sql_update_str = "UPDATE $tbl SET `$fld`=\"$str_utf8\" WHERE `$fld`=\"$str\";";
 	
 				if (!mysqli_query($db_con, $sql_update_str)) {
-					$msg_fail = "Failed to convert `$fld`='$str' to utf8.\r\n" . mysqli_error() . "\r\n";
+					$msg_fail = "Failed to convert `$fld`='$str' to utf8.\r\n" . mysqli_error($db_con) . "\r\n";
 					if (sql_execute($db_con, $sql_update_str,true,true,'',$msg_fail));
 				}
 			//}
@@ -662,7 +662,7 @@ function sql_get_first_result_bynum($db_con, $sql,$col) {
 	// $col must be an integer; starts at 0
 	$result = mysqli_query($db_con, $sql);
 	if (!$result) {
-	    echo 'Could not run query: ' . mysqli_error();
+	    echo 'Could not run query: ' . mysqli_error($db_con);
 	    return false;
 	}
 	$row = mysqli_fetch_row($result);
@@ -673,7 +673,7 @@ function sql_returns_records($db_con, $sql) {
 	// returns true if sql returns records, else false
 	$result = mysqli_query($db_con, $sql);
 	if (!$result) {
-	    die ('Could not run query: ' . mysqli_error() . '\r\n');
+	    die ('Could not run query: ' . mysqli_error($db_con) . '\r\n');
 	}
 	$num_rows = mysqli_num_rows($result);
 	if ($num_rows>0){
@@ -720,7 +720,7 @@ function sql_get_results($db_con, $sql,$field_name,$delim) {
 
 	if ($delim==null) $delim=",";	// Comma is default delimiter
 	if (!($result=mysqli_query($db_con, $sql))) {
-		die("Error - Offending SQL:\r\n$sql\r\n".mysqli_error()."\r\n");
+		die("Error - Offending SQL:\r\n$sql\r\n".mysqli_error($db_con)."\r\n");
 	} else {
 		$num_rows = mysqli_num_rows($result);
 		if ($num_rows==0) {
@@ -1068,7 +1068,7 @@ function sql_execute_multiple($db_con, $sqlmultiple) {
 		if (trim($sql<>";")) {
 			$result = mysqli_query($db_con, $sql);
 			if (!$result) {
-				$msg = 'Invalid query: ' . mysqli_error() . "\n";
+				$msg = 'Invalid query: ' . mysqli_error($db_con) . "\n";
 				$msg .= 'Offending SQL: ' . $sql;
 				die($msg);
 			} 
