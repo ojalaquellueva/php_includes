@@ -299,4 +299,21 @@ class Latin1UTF8 {
     }
 }
 
+function secondsToTime($s) {
+	/////////////////////////////////////////////////////////
+	// Converts seconds to hours:minutes:seconds 
+	// 
+	// If you don't want to display the numbers after the 
+	// decimal, just add round($s); to the beginning
+	/////////////////////////////////////////////////////
+	
+    $h = floor($s / 3600);
+    $s -= $h * 3600;
+    $m = floor($s / 60);
+    $s -= $m * 60;
+    return $h.':'.sprintf('%02d', $m).':'.sprintf('%02d', $s);
+}
+
+
+
 ?>
