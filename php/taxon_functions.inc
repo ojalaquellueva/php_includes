@@ -467,7 +467,7 @@ function get_children($db_con,$parent_id, $tbl, $id_name, $parent_id_name) {
 	return $children;
 }
 
-function has_children($this_id, $tbl, $id_name, $parent_id_name) {
+function has_children($db_con,$this_id, $tbl, $id_name, $parent_id_name) {
 	// returns true if one or more records link to this record via recursive FK
 	$sql = "
 		SELECT `$id_name` 
