@@ -125,7 +125,7 @@ function db_connect($host,$user,$pwd,$db,$echo_on) {
 	return $db_con;
 }
 
-function copy_tbl($src_tbl, $dest_tbl, $src_db, $dest_db) {
+function copy_tbl($db_con,$src_tbl, $dest_tbl, $src_db, $dest_db) {
 // copies tbl from one database to another, on same host
 // Assumes host and both db connections have already been established
 // WARNING: will delete original version of table $dest_tbl in $dest_db if it exists!
@@ -151,7 +151,7 @@ function copy_tbl($src_tbl, $dest_tbl, $src_db, $dest_db) {
 	Return TRUE;
 }
 
-function copy_tbl_warn($src_tbl, $dest_tbl, $src_db, $dest_db, $warn) {
+function copy_tbl_warn($db_con, $src_tbl, $dest_tbl, $src_db, $dest_db, $warn) {
 // copies tbl from one database to another, on same host
 // Assumes host and both db connections have already been established
 // Does not delete original table in $src_db
@@ -195,7 +195,7 @@ function copy_tbl_warn($src_tbl, $dest_tbl, $src_db, $dest_db, $warn) {
 }
 
 
-function move_tbl($src_tbl, $dest_tbl, $src_db, $dest_db) {
+function move_tbl($db_con, $src_tbl, $dest_tbl, $src_db, $dest_db) {
 // move tbl from one database to another, on same host
 // Assumes host and both db connections have already been established
 // WARNING: will delete original version of table $dest_tbl if it already exists!
@@ -225,7 +225,7 @@ function move_tbl($src_tbl, $dest_tbl, $src_db, $dest_db) {
 }
 
 
-function delete_tbl($tbl, $db) {
+function delete_tbl($db_con, $tbl, $db) {
 	// Deletes table $tbl in database $db, if it exists
 	// Note that returns TRUE even if table doesn't exist
 	// Assumes host and db connections have been established
@@ -239,7 +239,7 @@ function delete_tbl($tbl, $db) {
 	}
 }
 
-function sql_add_field($tbl,$fldname,$fldtype) {
+function sql_add_field($db_con, $tbl,$fldname,$fldtype) {
 	// Adds column $fldname to $tbl
 	// $fldtype must be a valid mysql data type specification
 	// Assumes host and db connections have been established
@@ -253,7 +253,7 @@ function sql_add_field($tbl,$fldname,$fldtype) {
 	}	
 }
 
-function sql_add_indexed_field($tbl,$fldname,$fldtype) {
+function sql_add_indexed_field($db_con,$tbl,$fldname,$fldtype) {
 	// Adds indexed column $fldname to $tbl
 	// $fldtype must be a valid & complete mysql column specification
 	// Will drop index if it already exists
@@ -790,7 +790,7 @@ function get_collation($db_con, $tbl) {
 	}
 }
 
-function rename_tbl($tbl1,$tbl2) {
+function rename_tbl($db_con, $tbl1,$tbl2) {
 	// Renames table from $tbl1 to $tbl2
 	// Checks that $tbl1 exists and $tbl2 does not exist
 	// If either condition is not satisfied 
